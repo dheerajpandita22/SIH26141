@@ -1,94 +1,55 @@
-// ============================================================
-// Batch Evaluation Metrics
-// ============================================================
-
-import type {
-  AttackType,
-  Verdict,
-  ConfusionMatrix,
-  BatchMetrics,
-  AttackDetectionRate,
-} from '../types/simulation';
-
-const ATTACK_LABELS: Record<AttackType, string> = {
-  none: 'No Attack',
-  forgery: 'Forgery',
-  impersonation: 'Impersonation',
-  replay: 'Replay',
-  channel: 'Channel Manipulation',
-};
+import { ConfusionMatrixData, BatchResult } from '../types/simulation';
 
 /**
- * Calculate confusion matrix from simulation results.
- * 
- * - No Attack + LEGITIMATE → TN
- * - No Attack + FLAGGED → FP
- * - Any attack + FLAGGED → TP
- * - Any attack + LEGITIMATE → FN
+ * Calculate confusion matrix and performance metrics
  */
-export function calculateConfusionMatrix(
-  results: Array<{ attack: AttackType; verdict: Verdict }>
-): ConfusionMatrix {
-  let tp = 0, tn = 0, fp = 0, fn = 0;
+export class MetricsCalculator {
+  public calculateConfusionMatrix(
+    batchResults: BatchResult[]
+  ): ConfusionMatrixData {
+    // Assume legitimate (no attack) is the negative class
+    // and any attack is the positive class
 
-  for (const res of results) {
-    const isAttack = res.attack !== 'none';
-    if (isAttack) {
-      if (res.verdict === 'FLAGGED') tp++;
-      else fn++;
-    } else {
-      if (res.verdict === 'LEGITIMATE') tn++;
-      else fp++;
+    const legitResult = batchResults.find((r) => r.attack === 'none');
+    const attackResults = batchResults.filter((r) => r.attack !== 'none');
+
+    let tp = 0; // True Positive: attack detected as flagged
+    let fp = 0; // False Positive: legitimate detected as flagged
+    let tn = 0; // True Negative: legitimate detected as legitimate
+    let fn = 0; // False Negative: attack detected as legitimate
+
+    // Process legitimate results
+    if (legitResult) {
+      tn = legitResult.legitCount;
+      fp = legitResult.flaggedCount;
     }
+
+    // Process attack results
+    for (const result of attackResults) {
+      tp += result.flaggedCount;
+      fn += result.legitCount;
+    }
+
+    // Calculate metrics
+    const accuracy = (tp + tn) / (tp + tn + fp + fn);
+    const precision = tp === 0 ? 0 : tp / (tp + fp);
+    const recall = tp === 0 ? 0 : tp / (tp + fn);
+    const f1Score =
+      precision + recall === 0
+        ? 0
+        : (2 * (precision * recall)) / (precision + recall);
+
+    return {
+      tp,
+      tn,
+      fp,
+      fn,
+      accuracy: Math.max(0, Math.min(1, accuracy)),
+      precision: Math.max(0, Math.min(1, precision)),
+      recall: Math.max(0, Math.min(1, recall)),
+      f1Score: Math.max(0, Math.min(1, f1Score)),
+    };
   }
-
-  return { tp, tn, fp, fn };
 }
 
-/**
- * Calculate accuracy, precision, recall, F1 from confusion matrix.
- */
-export function calculateMetrics(confusion: ConfusionMatrix): BatchMetrics {
-  const { tp, tn, fp, fn } = confusion;
-  const total = tp + tn + fp + fn;
-
-  const accuracy = total > 0 ? (tp + tn) / total : 0;
-  const precision = (tp + fp) > 0 ? tp / (tp + fp) : 0;
-  const recall = (tp + fn) > 0 ? tp / (tp + fn) : 0;
-  const f1 = (precision + recall) > 0 ? (2 * precision * recall) / (precision + recall) : 0;
-
-  return { accuracy, precision, recall, f1, confusion };
-}
-
-/**
- * Calculate per-attack-type detection rates.
- */
-export function calculateDetectionRates(
-  results: Array<{ attack: AttackType; verdict: Verdict }>
-): AttackDetectionRate[] {
-  const counts = new Map<AttackType, { flagged: number; total: number }>();
-
-  for (const res of results) {
-    if (!counts.has(res.attack)) {
-      counts.set(res.attack, { flagged: 0, total: 0 });
-    }
-    const state = counts.get(res.attack)!;
-    state.total++;
-    if (res.verdict === 'FLAGGED') {
-      state.flagged++;
-    }
-  }
-
-  const rates: AttackDetectionRate[] = [];
-  counts.forEach((val, key) => {
-    rates.push({
-      attackType: key,
-      label: ATTACK_LABELS[key] || key,
-      totalTrials: val.total,
-      flaggedCount: val.flagged,
-      flaggedRate: val.total > 0 ? val.flagged / val.total : 0,
-    });
-  });
-
-  return rates;
-}
+export const metricsCalculator = new MetricsCalculator();

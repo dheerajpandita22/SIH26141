@@ -1,27 +1,78 @@
-import { BasisProbabilities, SingleBasisResult } from '../types/simulation';
-import { RNG } from '../utils/random';
-import { getTheoreticalProbabilities } from './quantumState';
-import { sampleMeasurements } from './statistics';
+import { Basis } from '../types/simulation';
 
-export function simulateMeasurement(theta: number, basis: 'Z' | 'X' | 'Y', shots: number, rng: RNG): Omit<SingleBasisResult, 'detector'> {
-    const expected = getTheoreticalProbabilities(theta, basis);
-    const counts = sampleMeasurements(expected.p0, shots, rng);
-    const observed: BasisProbabilities = {
-        p0: counts.count0 / shots,
-        p1: counts.count1 / shots
-    };
-    return {
-        basis,
-        expected,
-        observed,
-        counts
-    };
+/**
+ * Seeded random number generator for reproducibility
+ */
+class SeededRandom {
+  private seed: number;
+
+  constructor(seed?: number) {
+    this.seed = seed !== undefined ? seed : Date.now();
+  }
+
+  public next(): number {
+    this.seed = (this.seed * 9301 + 49297) % 233280;
+    return this.seed / 233280;
+  }
 }
 
-export function simulateAllBases(theta: number, shots: number, rng: RNG): Array<Omit<SingleBasisResult, 'detector'>> {
-    return [
-        simulateMeasurement(theta, 'Z', shots, rng),
-        simulateMeasurement(theta, 'X', shots, rng),
-        simulateMeasurement(theta, 'Y', shots, rng)
-    ];
+/**
+ * Generate measurement results based on probabilities
+ */
+export function generateMeasurementResults(
+  prob0: number,
+  shots: number,
+  seed?: number
+): { count0: number; count1: number } {
+  const rng = new SeededRandom(seed);
+  let count0 = 0;
+  let count1 = 0;
+
+  for (let i = 0; i < shots; i++) {
+    if (rng.next() < prob0) {
+      count0++;
+    } else {
+      count1++;
+    }
+  }
+
+  return { count0, count1 };
+}
+
+/**
+ * Simulate measurement results with statistical variation
+ */
+export function simulateMeasurement(
+  prob0: number,
+  shots: number,
+  seed?: number
+): { observed0: number; observed1: number; pct0: number; pct1: number } {
+  const { count0, count1 } = generateMeasurementResults(prob0, shots, seed);
+
+  return {
+    observed0: count0,
+    observed1: count1,
+    pct0: (count0 / shots) * 100,
+    pct1: (count1 / shots) * 100,
+  };
+}
+
+/**
+ * Calculate mismatch rate between expected and observed
+ */
+export function calculateMismatchRate(
+  expected0: number,
+  expected1: number,
+  observed0: number,
+  observed1: number,
+  shots: number
+): number {
+  const expectedCount0 = expected0 * shots;
+  const expectedCount1 = expected1 * shots;
+
+  const diff0 = Math.abs(observed0 - expectedCount0);
+  const diff1 = Math.abs(observed1 - expectedCount1);
+
+  const mismatch = (diff0 + diff1) / (2 * shots);
+  return Math.min(1, Math.max(0, mismatch));
 }

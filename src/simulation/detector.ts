@@ -1,92 +1,146 @@
-// ============================================================
-// Threat Detector Module — Chi-square test + verdict logic
-// ============================================================
-
-import type {
-  DetectorResult,
-  MeasurementCounts,
-  BasisProbabilities,
-  SingleBasisResult,
-  MultiBasisDetectorResult,
-} from '../types/simulation';
-import { chiSquareStatistic, chiSquarePValue, calculateMismatchRate } from './statistics';
+import { ThreatDetectorResult, Basis, MeasurementResult } from '../types/simulation';
+import { chiSquareTest } from './statistics';
 
 /**
- * Run threat detection on a single basis measurement.
- * 
- * LEGITIMATE if: pValue >= alpha AND mismatchRate <= mismatchThreshold
- * FLAGGED otherwise.
+ * Threat Detection Engine
+ * Uses chi-square test and mismatch rate to determine if signature is legitimate
  */
-export function detectThreat(
-  observed: MeasurementCounts,
-  expected: BasisProbabilities,
-  shots: number,
-  alpha: number = 0.05,
-  mismatchThreshold: number = 0.15
-): DetectorResult {
-  const chiSq = chiSquareStatistic(observed, expected, shots);
-  const pValue = chiSquarePValue(chiSq, 1);
+export class ThreatDetector {
+  private alphaThreshold: number = 0.05; // Significance level
+  private mismatchThreshold: number = 0.15; // 15% mismatch tolerance
 
-  const observedProb: BasisProbabilities = {
-    p0: observed.count0 / shots,
-    p1: observed.count1 / shots,
-  };
-
-  const mismatchRate = calculateMismatchRate(observedProb, expected);
-
-  const pValueFlagged = pValue < alpha;
-  const mismatchFlagged = mismatchRate > mismatchThreshold;
-
-  let reason = '';
-  if (pValueFlagged && mismatchFlagged) {
-    reason = 'Statistically inconsistent with expected signature AND mismatch rate exceeded threshold';
-  } else if (pValueFlagged) {
-    reason = 'Statistically inconsistent with expected signature';
-  } else if (mismatchFlagged) {
-    reason = 'Mismatch rate exceeded threshold';
-  } else {
-    reason = 'All checks passed';
+  public setAlphaThreshold(alpha: number): void {
+    this.alphaThreshold = Math.max(0, Math.min(1, alpha));
   }
 
-  return {
-    chiSquare: chiSq,
-    pValue,
-    mismatchRate,
-    verdict: pValueFlagged || mismatchFlagged ? 'FLAGGED' : 'LEGITIMATE',
-    reason,
-    alpha,
-    mismatchThreshold,
-  };
-}
+  public setMismatchThreshold(threshold: number): void {
+    this.mismatchThreshold = Math.max(0, Math.min(1, threshold));
+  }
 
-/**
- * Run multi-basis detection. FLAGGED if any single basis is flagged.
- */
-export function detectMultiBasis(
-  basisResults: SingleBasisResult[],
-  _alpha?: number,
-  _mismatchThreshold?: number
-): MultiBasisDetectorResult {
-  const result: MultiBasisDetectorResult = {
-    overallVerdict: 'LEGITIMATE',
-    overallReason: 'All bases passed verification',
-  };
-
-  const reasons: string[] = [];
-
-  for (const br of basisResults) {
-    const basis = br.basis as 'Z' | 'X' | 'Y';
-    result[basis] = br.detector;
-
-    if (br.detector.verdict === 'FLAGGED') {
-      result.overallVerdict = 'FLAGGED';
-      reasons.push(`${basis}-basis: ${br.detector.reason}`);
+  public detectThreat(
+    measurements: MeasurementResult[]
+  ): ThreatDetectorResult {
+    // If measuring all bases, require all to pass
+    if (measurements.length > 1) {
+      return this.detectMultiBasis(measurements);
     }
+
+    const m = measurements[0];
+    return this.evaluateMeasurement(m);
   }
 
-  if (reasons.length > 0) {
-    result.overallReason = reasons.join('; ');
+  private evaluateMeasurement(
+    measurement: MeasurementResult
+  ): ThreatDetectorResult {
+    const { chiSquare, pValue } = chiSquareTest(
+      measurement.observed0,
+      measurement.observed1,
+      measurement.expected0,
+      measurement.expected1,
+      measurement.shots
+    );
+
+    const mismatchRate = measurement.mismatchRate;
+    const verdict = this.getVerdict(pValue, mismatchRate);
+    const reason = this.getReason(pValue, mismatchRate);
+
+    return {
+      chiSquare,
+      pValue,
+      mismatchRate,
+      alphaThreshold: this.alphaThreshold,
+      mismatchThreshold: this.mismatchThreshold,
+      verdict,
+      reason,
+    };
   }
 
-  return result;
+  private detectMultiBasis(
+    measurements: MeasurementResult[]
+  ): ThreatDetectorResult {
+    let maxChiSquare = 0;
+    let minPValue = 1;
+    let maxMismatchRate = 0;
+
+    for (const m of measurements) {
+      const { chiSquare, pValue } = chiSquareTest(
+        m.observed0,
+        m.observed1,
+        m.expected0,
+        m.expected1,
+        m.shots
+      );
+
+      maxChiSquare = Math.max(maxChiSquare, chiSquare);
+      minPValue = Math.min(minPValue, pValue);
+      maxMismatchRate = Math.max(maxMismatchRate, m.mismatchRate);
+    }
+
+    const verdict = this.getVerdict(minPValue, maxMismatchRate);
+    const reason = this.getReasonMultiBasis(minPValue, maxMismatchRate);
+
+    return {
+      chiSquare: maxChiSquare,
+      pValue: minPValue,
+      mismatchRate: maxMismatchRate,
+      alphaThreshold: this.alphaThreshold,
+      mismatchThreshold: this.mismatchThreshold,
+      verdict,
+      reason,
+    };
+  }
+
+  private getVerdict(pValue: number, mismatchRate: number): 'LEGITIMATE' | 'FLAGGED' {
+    const pValueCheck = pValue >= this.alphaThreshold;
+    const mismatchCheck = mismatchRate <= this.mismatchThreshold;
+
+    return pValueCheck && mismatchCheck ? 'LEGITIMATE' : 'FLAGGED';
+  }
+
+  private getReason(pValue: number, mismatchRate: number): string {
+    const pValueOk = pValue >= this.alphaThreshold;
+    const mismatchOk = mismatchRate <= this.mismatchThreshold;
+
+    if (pValueOk && mismatchOk) {
+      return `Signature is statistically consistent (p=${pValue.toFixed(4)}, mismatch=${(mismatchRate * 100).toFixed(2)}%)`;
+    }
+
+    const reasons: string[] = [];
+    if (!pValueOk) {
+      reasons.push(
+        `p-value (${pValue.toFixed(4)}) below threshold (${this.alphaThreshold})`
+      );
+    }
+    if (!mismatchOk) {
+      reasons.push(
+        `mismatch rate (${(mismatchRate * 100).toFixed(2)}%) exceeds threshold (${(this.mismatchThreshold * 100).toFixed(1)}%)`
+      );
+    }
+
+    return `FLAGGED — ${reasons.join('; ')}`;
+  }
+
+  private getReasonMultiBasis(
+    pValue: number,
+    mismatchRate: number
+  ): string {
+    const pValueOk = pValue >= this.alphaThreshold;
+    const mismatchOk = mismatchRate <= this.mismatchThreshold;
+
+    if (pValueOk && mismatchOk) {
+      return `Multi-basis measurement: signature verified across all bases`;
+    }
+
+    const reasons: string[] = [];
+    if (!pValueOk) {
+      reasons.push(`one or more bases show statistical inconsistency`);
+    }
+    if (!mismatchOk) {
+      reasons.push(`multi-basis mismatch exceeds threshold`);
+    }
+
+    return `FLAGGED — ${reasons.join('; ')}`;
+  }
 }
+
+export const defaultDetector = new ThreatDetector();
