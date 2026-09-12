@@ -1,0 +1,511 @@
+@import "tailwindcss";
+
+/* ============================================================
+   SIH26141 Quantum Signature Simulation — Design System
+   ============================================================ */
+
+/* ─── Custom Theme ──────────────────────────────────────── */
+@theme {
+  --color-bg-primary: #060a14;
+  --color-bg-secondary: #0c1220;
+  --color-bg-card: #111827;
+  --color-bg-card-hover: #1a2332;
+  --color-bg-elevated: #1e293b;
+  
+  --color-accent-cyan: #06b6d4;
+  --color-accent-cyan-light: #22d3ee;
+  --color-accent-cyan-dim: #0e7490;
+  --color-accent-purple: #8b5cf6;
+  --color-accent-purple-light: #a78bfa;
+  --color-accent-blue: #3b82f6;
+  
+  --color-status-legitimate: #10b981;
+  --color-status-legitimate-bg: rgba(16, 185, 129, 0.1);
+  --color-status-flagged: #ef4444;
+  --color-status-flagged-bg: rgba(239, 68, 68, 0.1);
+  --color-status-running: #3b82f6;
+  --color-status-warning: #f59e0b;
+  
+  --color-border-default: #1e293b;
+  --color-border-accent: rgba(6, 182, 212, 0.3);
+  
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* ─── Base Styles ───────────────────────────────────────── */
+body {
+  background-color: var(--color-bg-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+/* ─── Grid Background ───────────────────────────────────── */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ─── Glassmorphism Cards ───────────────────────────────── */
+.glass-card {
+  background: rgba(17, 24, 39, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(30, 41, 59, 0.8);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(6, 182, 212, 0.3);
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.05);
+}
+
+.glass-card-static {
+  background: rgba(17, 24, 39, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(30, 41, 59, 0.8);
+  border-radius: 12px;
+}
+
+/* ─── Glow Effects ──────────────────────────────────────── */
+.glow-cyan {
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.2), 0 0 30px rgba(6, 182, 212, 0.1);
+}
+
+.glow-green {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.2), 0 0 30px rgba(16, 185, 129, 0.1);
+}
+
+.glow-red {
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.2), 0 0 30px rgba(239, 68, 68, 0.1);
+}
+
+.glow-purple {
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.2), 0 0 30px rgba(139, 92, 246, 0.1);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+}
+
+.text-glow-green {
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.text-glow-red {
+  text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+/* ─── Verdict Badges ────────────────────────────────────── */
+.verdict-legitimate {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #10b981;
+}
+
+.verdict-flagged {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+
+/* ─── Quantum Circuit ───────────────────────────────────── */
+.circuit-wire {
+  stroke: #334155;
+  stroke-width: 2;
+  fill: none;
+}
+
+.circuit-wire-active {
+  stroke: #06b6d4;
+  stroke-width: 2;
+  fill: none;
+  filter: drop-shadow(0 0 4px rgba(6, 182, 212, 0.5));
+}
+
+.circuit-gate {
+  fill: rgba(17, 24, 39, 0.9);
+  stroke: #06b6d4;
+  stroke-width: 1.5;
+  rx: 4;
+}
+
+.circuit-gate-active {
+  fill: rgba(6, 182, 212, 0.15);
+  stroke: #22d3ee;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.4));
+}
+
+.circuit-gate-text {
+  fill: #e2e8f0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.circuit-measurement {
+  fill: rgba(139, 92, 246, 0.15);
+  stroke: #8b5cf6;
+  stroke-width: 1.5;
+}
+
+.circuit-measurement-active {
+  fill: rgba(139, 92, 246, 0.3);
+  stroke: #a78bfa;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.4));
+}
+
+/* ─── Circuit Animation ─────────────────────────────────── */
+@keyframes gate-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes wire-flow {
+  0% { stroke-dashoffset: 20; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.gate-animating {
+  animation: gate-pulse 0.6s ease-in-out;
+}
+
+.wire-flowing {
+  stroke-dasharray: 10, 10;
+  animation: wire-flow 0.5s linear infinite;
+}
+
+/* ─── Bloch Sphere ──────────────────────────────────────── */
+.bloch-sphere {
+  background: radial-gradient(circle at 40% 35%, rgba(6, 182, 212, 0.08), transparent 70%);
+}
+
+.bloch-arrow {
+  stroke: #22d3ee;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.5));
+  transition: all 0.4s ease;
+}
+
+.bloch-circle {
+  stroke: #334155;
+  stroke-width: 1;
+  fill: none;
+}
+
+.bloch-axis {
+  stroke: #1e293b;
+  stroke-width: 0.5;
+  stroke-dasharray: 4, 4;
+}
+
+/* ─── Progress Stages ───────────────────────────────────── */
+.stage-indicator {
+  transition: all 0.3s ease;
+}
+
+.stage-pending {
+  background: rgba(100, 116, 139, 0.2);
+  border-color: #475569;
+  color: #64748b;
+}
+
+.stage-active {
+  background: rgba(6, 182, 212, 0.15);
+  border-color: #06b6d4;
+  color: #22d3ee;
+  animation: gate-pulse 1s ease-in-out infinite;
+}
+
+.stage-complete {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+  color: #10b981;
+}
+
+/* ─── Flow Diagram ──────────────────────────────────────── */
+.flow-node {
+  background: rgba(17, 24, 39, 0.9);
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+}
+
+.flow-node-active {
+  border-color: #06b6d4;
+  background: rgba(6, 182, 212, 0.1);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
+}
+
+.flow-node-complete {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.flow-node-attack {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.flow-connector {
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(180deg, #334155, #1e293b);
+  margin: 0 auto;
+}
+
+.flow-connector-active {
+  background: linear-gradient(180deg, #06b6d4, #0e7490);
+  box-shadow: 0 0 6px rgba(6, 182, 212, 0.3);
+}
+
+/* ─── Confusion Matrix ──────────────────────────────────── */
+.confusion-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-radius: 8px;
+  min-height: 80px;
+  transition: all 0.3s ease;
+}
+
+.confusion-tp {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #10b981;
+}
+
+.confusion-tn {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+}
+
+.confusion-fp {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+}
+
+.confusion-fn {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0c1220;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* ─── Custom Slider ─────────────────────────────────────── */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+}
+
+input[type="range"]::-webkit-slider-track {
+  height: 6px;
+  background: linear-gradient(90deg, #0e7490, #06b6d4, #8b5cf6);
+  border-radius: 3px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #22d3ee;
+  border: 2px solid #060a14;
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+  margin-top: -6px;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  background: linear-gradient(90deg, #0e7490, #06b6d4, #8b5cf6);
+  border-radius: 3px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #22d3ee;
+  border: 2px solid #060a14;
+  box-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+}
+
+/* ─── Animations ────────────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(6, 182, 212, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(6, 182, 212, 0.4); }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+.animate-slide-in {
+  animation: slide-in-right 0.4s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ─── Tab Navigation ────────────────────────────────────── */
+.tab-button {
+  position: relative;
+  padding: 10px 16px;
+  color: #94a3b8;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-button:hover {
+  color: #e2e8f0;
+  background: rgba(6, 182, 212, 0.05);
+}
+
+.tab-button-active {
+  color: #22d3ee;
+  border-bottom-color: #06b6d4;
+  background: rgba(6, 182, 212, 0.08);
+}
+
+/* ─── Metric Cards ──────────────────────────────────────── */
+.metric-card {
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(30, 41, 59, 0.5));
+  border: 1px solid rgba(30, 41, 59, 0.8);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  background: linear-gradient(135deg, #06b6d4, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Responsive ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .circuit-gate-text {
+    font-size: 10px;
+  }
+  .metric-value {
+    font-size: 1.5rem;
+  }
+}
+
+/* ─── Demo Mode Banner ──────────────────────────────────── */
+.demo-banner {
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.15));
+  border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* ─── Tooltips ──────────────────────────────────────────── */
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 8px;
+  background: #1e293b;
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+}
+
+/* ─── Recharts Overrides ────────────────────────────────── */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: #1e293b;
+}
+
+.recharts-text {
+  fill: #94a3b8 !important;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: #111827 !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 8px !important;
+}
+
+/* ─── Session Demo ──────────────────────────────────────── */
+.session-valid {
+  border-left: 3px solid #10b981;
+}
+
+.session-invalid {
+  border-left: 3px solid #ef4444;
+}
