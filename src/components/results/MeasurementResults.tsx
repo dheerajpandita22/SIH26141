@@ -1,5 +1,5 @@
 import React from 'react';
-import { SimulationResult } from '../../types/simulation';
+import type { SimulationResult } from '../../types/simulation';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 
 interface MeasurementResultsProps {
@@ -40,7 +40,7 @@ const MeasurementResults: React.FC<MeasurementResultsProps> = ({ result }) => {
                 Measurement Results (Basis: {basisResult.basis})
               </h3>
               <div className="bg-slate-800 px-3 py-1 rounded-full text-sm text-slate-300 border border-slate-700">
-                {basisResult.shots} shots
+                {result.config.shots} shots
               </div>
             </div>
 
@@ -59,10 +59,10 @@ const MeasurementResults: React.FC<MeasurementResultsProps> = ({ result }) => {
                   />
                   <Legend wrapperStyle={{ paddingTop: '10px' }} />
                   <Bar dataKey="Expected" fill="#06b6d4" radius={[4, 4, 0, 0]} maxBarSize={60}>
-                    <LabelList dataKey="Expected" position="top" fill="#cbd5e1" formatter={(val: number) => `${val}%`} />
+                    <LabelList dataKey="Expected" position="top" fill="#cbd5e1" formatter={(val: any) => `${val}%`} />
                   </Bar>
                   <Bar dataKey="Observed" fill="#8b5cf6" radius={[4, 4, 0, 0]} maxBarSize={60}>
-                    <LabelList dataKey="Observed" position="top" fill="#cbd5e1" formatter={(val: number) => `${val}%`} />
+                    <LabelList dataKey="Observed" position="top" fill="#cbd5e1" formatter={(val: any) => `${val}%`} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>

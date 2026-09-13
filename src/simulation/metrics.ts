@@ -1,11 +1,11 @@
-import { ConfusionMatrixData, BatchResult } from '../types/simulation';
+import type { ConfusionMatrixData, AttackTrialResult } from '../types/simulation';
 
 /**
  * Calculate confusion matrix and performance metrics
  */
 export class MetricsCalculator {
   public calculateConfusionMatrix(
-    batchResults: BatchResult[]
+    batchResults: AttackTrialResult[]
   ): ConfusionMatrixData {
     // Assume legitimate (no attack) is the negative class
     // and any attack is the positive class

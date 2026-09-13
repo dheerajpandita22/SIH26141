@@ -1,6 +1,6 @@
 import React from 'react';
 import { Atom, Play } from 'lucide-react';
-import { AppTab } from '../../types/simulation';
+import type { AppTab } from '../../types/simulation';
 
 interface HeaderProps {
   activeTab: AppTab;

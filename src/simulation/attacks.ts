@@ -1,4 +1,5 @@
-import { AttackType, AttackInjection } from '../types/simulation';
+import type { AttackType, AttackInjection, SimulationConfig, BasisProbabilities } from '../types/simulation';
+import type { RNG } from '../utils/random';
 import { normalizeAngle } from './quantumState';
 
 /**
@@ -92,3 +93,68 @@ function generateNonce(): string {
 }
 
 export const attackSimulator = new AttackSimulator();
+
+/**
+ * Pure, seeded version of attack injection used by the functional
+ * simulation orchestrator (runSimulation.ts). Unlike AttackSimulator,
+ * this takes an explicit RNG so a full batch run can be reproduced
+ * from a single seed.
+ */
+export function applyAttack(
+  config: SimulationConfig,
+  rng: RNG
+): { effectiveTheta: number; attackInfo: AttackInjection; channelDisturbed: boolean } {
+  const { theta, attack, channelDisturbanceProb } = config;
+  const injection: AttackInjection = { type: attack };
+  let effectiveTheta = theta;
+  let channelDisturbed = false;
+
+  switch (attack) {
+    case 'none':
+      break;
+
+    case 'forgery': {
+      const attackerTheta = normalizeAngle(theta + (rng() * Math.PI - Math.PI / 2));
+      injection.attackerTheta = attackerTheta;
+      injection.attackerThetaDiff = Math.abs(normalizeAngle(attackerTheta - theta));
+      effectiveTheta = attackerTheta;
+      break;
+    }
+
+    case 'impersonation': {
+      const attackerTheta = Math.PI / 2;
+      injection.attackerTheta = attackerTheta;
+      injection.attackerThetaDiff = Math.abs(normalizeAngle(attackerTheta - theta));
+      effectiveTheta = attackerTheta;
+      break;
+    }
+
+    case 'replay':
+      // Theta itself is untouched for a replay — the attack is caught via
+      // session/nonce validation, not via the measurement statistics.
+      injection.nonceValid = false;
+      break;
+
+    case 'channel_manipulation': {
+      const prob = channelDisturbanceProb ?? 30;
+      injection.channelDisturbanceProb = prob;
+      channelDisturbed = rng() < prob / 100;
+      injection.channelDisturbanceOccurred = channelDisturbed;
+      break;
+    }
+  }
+
+  return { effectiveTheta, attackInfo: injection, channelDisturbed };
+}
+
+/**
+ * Apply a channel bit-flip disturbance to a pair of measurement
+ * probabilities, if one occurred.
+ */
+export function applyChannelEffect(
+  probs: BasisProbabilities,
+  disturbed: boolean
+): BasisProbabilities {
+  if (!disturbed) return probs;
+  return { p0: probs.p1, p1: probs.p0 };
+}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { MeasurementBasis } from '../../types/simulation';
+import type { MeasurementBasis } from '../../types/simulation';
 import { getTheoreticalProbabilities } from '../../simulation/quantumState';
 
 interface MeasurementPanelProps {

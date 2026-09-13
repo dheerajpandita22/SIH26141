@@ -1,6 +1,5 @@
-import React from 'react';
 import { Zap, ArrowRight } from 'lucide-react';
-import { QuantumState } from '../types/simulation';
+import type { QuantumState } from '../types/simulation';
 import { radiansToDegrees } from '../simulation/quantumState';
 
 interface QuantumCircuitProps {

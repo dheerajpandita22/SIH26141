@@ -1,5 +1,5 @@
 import React from 'react';
-import { SimulationStage } from '../../types/simulation';
+import type { SimulationStage } from '../../types/simulation';
 
 interface QuantumCircuitProps {
   theta: number;

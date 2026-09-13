@@ -1,7 +1,6 @@
-import { Basis } from '../types/simulation';
+import type { Basis, MeasurementResult } from '../types/simulation';
 import { calculateQuantumState } from './quantumState';
 import { simulateMeasurement, calculateMismatchRate } from './measurement';
-import { MeasurementResult } from '../types/simulation';
 
 /**
  * Simulate quantum teleportation-based signature verification
@@ -47,7 +46,7 @@ export class QuantumTeleportation {
 
     // Simulate measurement
     const seedForBasis = seed ? seed + basis.charCodeAt(0) : undefined;
-    const { observed0, observed1, pct0, pct1 } = simulateMeasurement(
+    const { observed0, observed1 } = simulateMeasurement(
       expected0,
       shots,
       seedForBasis

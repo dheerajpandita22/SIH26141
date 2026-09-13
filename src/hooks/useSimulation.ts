@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import {
+import type {
   Basis,
   AttackType,
   SimulationRun,
@@ -148,7 +148,7 @@ export function useSimulation() {
 
       // Calculate chi-square for each measurement
       measurements = measurements.map((m) => {
-        const { chiSquare, pValue } = chiSquareTest(
+        const { statistic: chiSquare, pValue } = chiSquareTest(
           m.observed0,
           m.observed1,
           m.expected0,

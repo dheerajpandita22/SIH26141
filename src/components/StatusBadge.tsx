@@ -1,6 +1,5 @@
-import React from 'react';
-import { Zap, AlertCircle, CheckCircle, Clock } from 'lucide-react';
-import { Verdict } from '../types/simulation';
+import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import type { Verdict } from '../types/simulation';
 
 interface StatusBadgeProps {
   verdict: Verdict;

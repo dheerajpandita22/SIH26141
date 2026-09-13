@@ -1,3 +1,21 @@
+import type { RNG } from '../utils/random';
+
+/**
+ * Draw `shots` binary samples from a Bernoulli(p0) distribution using
+ * the supplied seeded RNG, returning the observed counts.
+ */
+export function sampleMeasurements(
+  p0: number,
+  shots: number,
+  rng: RNG
+): { count0: number; count1: number } {
+  let count0 = 0;
+  for (let i = 0; i < shots; i++) {
+    if (rng() < p0) count0++;
+  }
+  return { count0, count1: shots - count0 };
+}
+
 /**
  * Chi-square goodness-of-fit test
  * Compares observed vs expected frequencies

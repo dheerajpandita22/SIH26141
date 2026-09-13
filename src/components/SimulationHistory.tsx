@@ -1,10 +1,9 @@
-import React from 'react';
-import { SimulationRun } from '../types/simulation';
+import type { HistoryEntry } from '../types/simulation';
 import { StatusBadge } from './StatusBadge';
 import { radiansToDegrees } from '../simulation/quantumState';
 
 interface SimulationHistoryProps {
-  history: SimulationRun[];
+  history: HistoryEntry[];
   onClear: () => void;
 }
 
@@ -45,13 +44,13 @@ export function SimulationHistory({ history, onClear }: SimulationHistoryProps) 
               </tr>
             </thead>
             <tbody>
-              {history.slice(0, 20).map((run, idx) => (
-                <tr key={idx} className="border-b border-slate-700/50 hover:bg-slate-800/30">
+              {history.slice(0, 20).map((run) => (
+                <tr key={run.id} className="border-b border-slate-700/50 hover:bg-slate-800/30">
                   <td className="px-3 py-2">{formatTime(run.timestamp)}</td>
                   <td className="px-3 py-2">{radiansToDegrees(run.theta).toFixed(1)}°</td>
                   <td className="px-3 py-2">{run.basis}</td>
                   <td className="px-3 py-2">{run.shots}</td>
-                  <td className="px-3 py-2 capitalize">{run.attackType.replace('_', ' ')}</td>
+                  <td className="px-3 py-2 capitalize">{run.attack.replace('_', ' ')}</td>
                   <td className="px-3 py-2">{run.pValue.toFixed(4)}</td>
                   <td className="px-3 py-2">{(run.mismatchRate * 100).toFixed(2)}%</td>
                   <td className="px-3 py-2 text-center">

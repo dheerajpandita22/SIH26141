@@ -1,5 +1,5 @@
 import React from 'react';
-import { SimulationStage, AttackType } from '../../types/simulation';
+import type { SimulationStage, AttackType } from '../../types/simulation';
 import { 
   User, 
   FileCode2, 

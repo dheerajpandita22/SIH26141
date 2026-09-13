@@ -1,5 +1,5 @@
 import React from 'react';
-import { SimulationResult } from '../../types/simulation';
+import type { SimulationResult } from '../../types/simulation';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList } from 'recharts';
 
 interface MultiBasisResultsProps {
@@ -77,10 +77,10 @@ const MultiBasisResults: React.FC<MultiBasisResultsProps> = ({ result }) => {
             />
             <Legend wrapperStyle={{ paddingTop: '10px' }} />
             <Bar dataKey="Expected |0⟩" fill="#06b6d4" radius={[4, 4, 0, 0]} maxBarSize={40}>
-              <LabelList dataKey="Expected |0⟩" position="top" fill="#cbd5e1" formatter={(val: number) => `${val}%`} />
+              <LabelList dataKey="Expected |0⟩" position="top" fill="#cbd5e1" formatter={(val: any) => `${val}%`} />
             </Bar>
             <Bar dataKey="Observed |0⟩" fill="#8b5cf6" radius={[4, 4, 0, 0]} maxBarSize={40}>
-              <LabelList dataKey="Observed |0⟩" position="top" fill="#cbd5e1" formatter={(val: number) => `${val}%`} />
+              <LabelList dataKey="Observed |0⟩" position="top" fill="#cbd5e1" formatter={(val: any) => `${val}%`} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>

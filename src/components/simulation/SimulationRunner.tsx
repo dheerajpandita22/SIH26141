@@ -1,5 +1,5 @@
 import React from 'react';
-import { SimulationStage } from '../../types/simulation';
+import type { SimulationStage } from '../../types/simulation';
 import { Play, RotateCcw, Loader2 } from 'lucide-react';
 
 interface SimulationRunnerProps {
@@ -59,7 +59,7 @@ const SimulationRunner: React.FC<SimulationRunnerProps> = ({ stage, isRunning, o
             style={{ width: `calc(${(Math.max(0, currentIndex - 1) / (stages.length - 1)) * 100}% - 4rem)` }}
           />
           
-          {stages.map((s, idx) => {
+          {stages.map((s) => {
             const stepIndex = stageOrder.indexOf(s.id);
             const isComplete = currentIndex >= stepIndex;
             const isActive = currentIndex === stepIndex;

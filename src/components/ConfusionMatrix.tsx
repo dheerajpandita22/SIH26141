@@ -1,5 +1,4 @@
-import React from 'react';
-import { ConfusionMatrixData } from '../types/simulation';
+import type { ConfusionMatrixData } from '../types/simulation';
 
 interface ConfusionMatrixProps {
   data: ConfusionMatrixData;

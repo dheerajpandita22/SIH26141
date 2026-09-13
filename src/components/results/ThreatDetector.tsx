@@ -1,5 +1,5 @@
 import React from 'react';
-import { SimulationResult } from '../../types/simulation';
+import type { SimulationResult } from '../../types/simulation';
 import { Shield, ShieldAlert, CheckCircle, AlertTriangle } from 'lucide-react';
 
 interface ThreatDetectorProps {
@@ -71,7 +71,7 @@ const ThreatDetector: React.FC<ThreatDetectorProps> = ({ result }) => {
                 </div>
                 <div className="flex justify-between items-center bg-slate-800/50 p-2 rounded">
                   <span className="text-slate-400">p-value:</span>
-                  <span className={`${detector.pValue < detector.alpha ? 'text-red-400 font-bold' : 'text-green-400'}`}>
+                  <span className={`${detector.pValue < detector.alphaThreshold ? 'text-red-400 font-bold' : 'text-green-400'}`}>
                     {detector.pValue.toFixed(4)}
                   </span>
                 </div>
@@ -83,7 +83,7 @@ const ThreatDetector: React.FC<ThreatDetectorProps> = ({ result }) => {
                 </div>
                 <div className="flex justify-between items-center bg-slate-800/50 p-2 rounded">
                   <span className="text-slate-400">α Threshold:</span>
-                  <span className="text-slate-300">{detector.alpha}</span>
+                  <span className="text-slate-300">{detector.alphaThreshold}</span>
                 </div>
                 <div className="flex justify-between items-center bg-slate-800/50 p-2 rounded col-span-2 md:col-span-1">
                   <span className="text-slate-400">Mismatch Threshold:</span>

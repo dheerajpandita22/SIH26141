@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { BatchResult, SimulationConfig, AttackType, Verdict, BatchMetrics, AttackDetectionRate } from '../types/simulation';
+import type { BatchResult, SimulationConfig, AttackType, Verdict, BatchMetrics, AttackDetectionRate } from '../types/simulation';
 import { runFullSimulation } from '../simulation/runSimulation';
 import { createRNG } from '../utils/random';
 
@@ -9,7 +9,7 @@ function getAttackLabel(type: AttackType): string {
         case 'forgery': return 'Forgery Attack';
         case 'impersonation': return 'Impersonation Attack';
         case 'replay': return 'Replay Attack';
-        case 'channel': return 'Channel Manipulation';
+        case 'channel_manipulation': return 'Channel Manipulation';
         default: return type;
     }
 }
@@ -26,7 +26,7 @@ export function useBatchEval() {
     setBatchResult(null);
     isCancelled.current = false;
 
-    const attackTypes: AttackType[] = ['none', 'forgery', 'impersonation', 'replay', 'channel'];
+    const attackTypes: AttackType[] = ['none', 'forgery', 'impersonation', 'replay', 'channel_manipulation'];
     const allResults: Array<{attack: AttackType, verdict: Verdict, expectedVerdict: Verdict}> = [];
     const usedNonces = new Set<string>();
     

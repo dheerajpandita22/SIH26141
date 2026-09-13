@@ -1,5 +1,3 @@
-import { Basis } from '../types/simulation';
-
 /**
  * Seeded random number generator for reproducibility
  */

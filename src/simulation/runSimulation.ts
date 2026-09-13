@@ -10,6 +10,7 @@ import type {
   MeasurementBasis,
 } from '../types/simulation';
 import { createRNG } from '../utils/random';
+import type { RNG } from '../utils/random';
 import { applyAttack, applyChannelEffect } from './attacks';
 import { prepareSignatureState, getTheoreticalProbabilities } from './quantumState';
 import { sampleMeasurements } from './statistics';
@@ -33,9 +34,10 @@ import { generateSession, generateReplaySession, validateSession } from './sessi
  */
 export function runFullSimulation(
   config: SimulationConfig,
-  usedNonces: Set<string>
+  usedNonces: Set<string>,
+  sharedRng?: RNG
 ): SimulationResult {
-  const rng = createRNG(config.seed);
+  const rng = sharedRng ?? createRNG(config.seed);
 
   // 1. Prepare the signature state
   const signatureState = prepareSignatureState(config.theta);

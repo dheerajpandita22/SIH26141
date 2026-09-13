@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { SimulationResult, HistoryEntry, Verdict } from '../types/simulation';
+import type { SimulationResult, HistoryEntry } from '../types/simulation';
 
 const HISTORY_KEY = 'quantum-sim-history';
 const MAX_HISTORY = 20;
@@ -18,9 +18,14 @@ export function useHistory() {
     }
   }, []);
 
-  const saveHistory = (newHistory: HistoryEntry[]) => {
-    setHistory(newHistory);
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(newHistory));
+  const saveHistory = (
+    updater: HistoryEntry[] | ((prev: HistoryEntry[]) => HistoryEntry[])
+  ) => {
+    setHistory((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
+      return next;
+    });
   };
 
   const addEntry = useCallback((result: SimulationResult) => {

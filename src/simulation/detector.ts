@@ -1,4 +1,10 @@
-import { ThreatDetectorResult, Basis, MeasurementResult } from '../types/simulation';
+import type {
+  ThreatDetectorResult,
+  MeasurementResult,
+  BasisProbabilities,
+  SingleBasisResult,
+  Verdict,
+} from '../types/simulation';
 import { chiSquareTest } from './statistics';
 
 /**
@@ -32,7 +38,7 @@ export class ThreatDetector {
   private evaluateMeasurement(
     measurement: MeasurementResult
   ): ThreatDetectorResult {
-    const { chiSquare, pValue } = chiSquareTest(
+    const { statistic: chiSquare, pValue } = chiSquareTest(
       measurement.observed0,
       measurement.observed1,
       measurement.expected0,
@@ -63,7 +69,7 @@ export class ThreatDetector {
     let maxMismatchRate = 0;
 
     for (const m of measurements) {
-      const { chiSquare, pValue } = chiSquareTest(
+      const { statistic: chiSquare, pValue } = chiSquareTest(
         m.observed0,
         m.observed1,
         m.expected0,
@@ -144,3 +150,85 @@ export class ThreatDetector {
 }
 
 export const defaultDetector = new ThreatDetector();
+
+/**
+ * Pure, single-basis threat detection function used by the functional
+ * simulation orchestrator (runSimulation.ts). Compares sampled counts
+ * against theoretical expected probabilities via a chi-square test and
+ * a raw mismatch-rate check.
+ */
+export function detectThreat(
+  counts: { count0: number; count1: number },
+  expected: BasisProbabilities,
+  shots: number,
+  alpha: number,
+  mismatchThreshold: number
+): ThreatDetectorResult {
+  const { statistic, pValue } = chiSquareTest(
+    counts.count0,
+    counts.count1,
+    expected.p0,
+    expected.p1,
+    shots
+  );
+
+  const observedP0 = shots > 0 ? counts.count0 / shots : 0;
+  const mismatchRate = Math.abs(observedP0 - expected.p0);
+
+  const pValueOk = pValue >= alpha;
+  const mismatchOk = mismatchRate <= mismatchThreshold;
+  const verdict: Verdict = pValueOk && mismatchOk ? 'LEGITIMATE' : 'FLAGGED';
+
+  let reason: string;
+  if (pValueOk && mismatchOk) {
+    reason = `Signature is statistically consistent (p=${pValue.toFixed(4)}, mismatch=${(mismatchRate * 100).toFixed(2)}%)`;
+  } else {
+    const reasons: string[] = [];
+    if (!pValueOk) {
+      reasons.push(`p-value (${pValue.toFixed(4)}) below threshold (${alpha})`);
+    }
+    if (!mismatchOk) {
+      reasons.push(
+        `mismatch rate (${(mismatchRate * 100).toFixed(2)}%) exceeds threshold (${(mismatchThreshold * 100).toFixed(1)}%)`
+      );
+    }
+    reason = `FLAGGED — ${reasons.join('; ')}`;
+  }
+
+  return {
+    chiSquare: statistic,
+    pValue,
+    mismatchRate,
+    alphaThreshold: alpha,
+    mismatchThreshold,
+    verdict,
+    reason,
+  };
+}
+
+/**
+ * Combine per-basis detector verdicts into a single overall verdict —
+ * flagged if any measured basis was flagged.
+ */
+export function detectMultiBasis(
+  basisResults: SingleBasisResult[],
+  _alpha: number,
+  _mismatchThreshold: number
+): { overallVerdict: Verdict; overallReason: string } {
+  const flagged = basisResults.filter((r) => r.detector.verdict === 'FLAGGED');
+
+  if (flagged.length === 0) {
+    const overallReason =
+      basisResults.length > 1
+        ? 'Multi-basis measurement: signature verified across all bases'
+        : (basisResults[0]?.detector.reason ?? 'Signature verified');
+    return { overallVerdict: 'LEGITIMATE', overallReason };
+  }
+
+  const overallReason =
+    basisResults.length > 1
+      ? `FLAGGED — inconsistency detected in ${flagged.length} of ${basisResults.length} bases`
+      : flagged[0].detector.reason;
+
+  return { overallVerdict: 'FLAGGED', overallReason };
+}

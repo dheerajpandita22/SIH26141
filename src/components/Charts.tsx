@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { MeasurementResult, Basis } from '../types/simulation';
+import { useMemo } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import type { MeasurementResult, Basis } from '../types/simulation';
 
 interface MeasurementChartProps {
   measurements: MeasurementResult[];
@@ -72,7 +72,7 @@ export function ProbabilityDistribution({ expected0, observed0, shots, basis }: 
             fill="#8884d8"
             dataKey="value"
           >
-            {data.map((entry, index) => (
+            {data.map((_entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>

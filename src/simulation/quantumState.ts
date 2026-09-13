@@ -1,4 +1,4 @@
-import { QuantumState, Basis } from '../types/simulation';
+import type { QuantumState, Basis, BasisProbabilities } from '../types/simulation';
 
 /**
  * Calculate quantum state probabilities based on the rotation angle θ
@@ -48,6 +48,28 @@ export function calculateQuantumState(theta: number, basis: Basis): QuantumState
     prob0: Math.max(0, Math.min(1, prob0)),
     prob1: Math.max(0, Math.min(1, prob1)),
   };
+}
+
+/**
+ * Prepare the initial signature state for a given secret angle θ.
+ * Represented in the Z basis, since that's the basis the signature is
+ * originally encoded in before teleportation/measurement.
+ */
+export function prepareSignatureState(theta: number): QuantumState {
+  return calculateQuantumState(theta, 'Z');
+}
+
+/**
+ * Theoretical |0>/|1> probabilities for a given theta + basis, as a
+ * plain { p0, p1 } pair (used by the simulation orchestrator and the
+ * measurement basis config panel).
+ */
+export function getTheoreticalProbabilities(
+  theta: number,
+  basis: Exclude<Basis, 'ALL'>
+): BasisProbabilities {
+  const state = calculateQuantumState(theta, basis);
+  return { p0: state.prob0, p1: state.prob1 };
 }
 
 /**
